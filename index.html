@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Calcolatore di Importo Lordo</title>
+</head>
+<body>
+    <h1>Calcolatore di Importo Lordo</h1>
+    <label for="netto">Importo Netto (€):</label>
+    <input type="number" id="netto" step="0.01"><br><br>
+    <label for="percentuale">Percentuale (%):</label>
+    <input type="number" id="percentuale" step="0.01"><br><br>
+    <button onclick="calcolaLordo()">Calcola Importo Lordo</button>
+    <p id="risultato"></p>
+
+    <script>
+        function calcolaLordo() {
+            var netto = parseFloat(document.getElementById('netto').value);
+            var percentuale = parseFloat(document.getElementById('percentuale').value);
+
+            if (isNaN(netto) || isNaN(percentuale)) {
+                alert('Per favore, inserisci valori numerici validi.');
+                return;
+            }
+
+            var lordo = netto / (1 + (percentuale / 100));
+            lordo = lordo.toFixed(2);
+
+            document.getElementById('risultato').innerHTML = 'L\'importo lordo da inserire è: €' + lordo;
+        }
+    </script>
+</body>
+</html>
