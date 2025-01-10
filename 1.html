@@ -2,89 +2,109 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Calcolo Fattura con Marca da Bollo</title>
+  <title>Calcolo Fattura con Marca da Bollo Tassata</title>
 </head>
 <body>
-  <h1>Calcolo Fattura</h1>
-  
-  <!-- Importo totale desiderato in fattura -->
+  <h1>Calcolo Fattura (con marca da bollo soggetta a imposta)</h1>
+
+  <!-- Totale desiderato (compreso marca da bollo e imposta) -->
   <label for="totale">Totale Fattura (€):</label>
-  <input type="number" id="totale" step="0.01" placeholder="402"><br><br>
-  
-  <!-- Quantità di sedute o unità -->
+  <input type="number" id="totale" step="0.01" placeholder="400"><br><br>
+
+  <!-- Quantità -->
   <label for="quantita">Quantità:</label>
   <input type="number" id="quantita" step="1" value="1"><br><br>
-  
+
   <!-- Percentuale -->
   <label for="percentuale">Percentuale (%):</label>
-  <input type="number" id="percentuale" step="0.01" placeholder="22"><br><br>
-  
-  <!-- Checkbox per la marca da bollo -->
+  <input type="number" id="percentuale" step="0.01" placeholder="2"><br><br>
+
+  <!-- Checkbox marca da bollo -->
   <input type="checkbox" id="marcaBollo">
-  <label for="marcaBollo">Includi marca da bollo di 2€</label><br><br>
-  
-  <!-- Bottone calcolo -->
-  <button onclick="calcolaValori()">Calcola</button>
+  <label for="marcaBollo">Includi marca da bollo (2€) tassata</label><br><br>
+
+  <!-- Bottone di calcolo -->
+  <button onclick="calcolaFattura()">Calcola</button>
   
   <hr>
-  <!-- Risultato -->
+
+  <!-- Risultati -->
   <div id="risultato"></div>
-  
+
   <script>
-    function calcolaValori() {
-      // 1. Leggi i valori in input
-      var totale = parseFloat(document.getElementById('totale').value);
-      var quantita = parseInt(document.getElementById('quantita').value);
-      var percentuale = parseFloat(document.getElementById('percentuale').value);
-      var flagMarcaBollo = document.getElementById('marcaBollo').checked;
-      
-      // 2. Verifica validità di base
-      if (isNaN(totale) || totale <= 0) {
-        alert("Inserisci un valore di 'Totale Fattura' valido (> 0).");
+    function calcolaFattura() {
+      // Lettura valori in input
+      var T = parseFloat(document.getElementById('totale').value);      // Totale fattura
+      var Q = parseInt(document.getElementById('quantita').value);      // Quantità
+      var rPerc = parseFloat(document.getElementById('percentuale').value); // Percentuale (es. 2, 22, ecc.)
+      var marcaBolloAttiva = document.getElementById('marcaBollo').checked;
+
+      // Validazioni base
+      if (isNaN(T) || T <= 0) {
+        alert("Inserisci un 'Totale Fattura' valido (> 0).");
         return;
       }
-      if (isNaN(quantita) || quantita <= 0) {
-        alert("Inserisci una quantità valida (>= 1).");
+      if (isNaN(Q) || Q <= 0) {
+        alert("Inserisci una 'Quantità' valida (>= 1).");
         return;
       }
-      if (isNaN(percentuale) || percentuale < 0) {
-        alert("Inserisci una percentuale valida (>= 0).");
+      if (isNaN(rPerc) || rPerc < 0) {
+        alert("Inserisci una 'Percentuale' valida (>= 0).");
         return;
       }
-      
-      // 3. Calcolo dell'importo singolo "lordo"
-      //    Se include marca da bollo: (Totale - 2) / Quantità
-      //    Se no: Totale / Quantità
-      var importoSingoloLordo;
-      if (flagMarcaBollo) {
-        importoSingoloLordo = (totale - 2) / quantita;
-      } else {
-        importoSingoloLordo = totale / quantita;
-      }
-      
-      // Arrotonda a due decimali
-      importoSingoloLordo = parseFloat(importoSingoloLordo.toFixed(2));
-      
-      // 4. Calcolo dell'importo singolo "netto" (senza percentuale)
-      //    importoSingoloNetto = importoSingoloLordo / (1 + (percentuale / 100))
-      var importoSingoloNetto = importoSingoloLordo / (1 + (percentuale / 100));
-      importoSingoloNetto = parseFloat(importoSingoloNetto.toFixed(2));
-      
-      // 5. (Facoltativo) Verifica che ricalcolando si ottenga il Totale desiderato
-      //    Ricalcoliamo il Totale con l'importoSingoloLordo * quantita (+ marca da bollo)
-      var totaleRicalcolato = importoSingoloLordo * quantita;
-      if (flagMarcaBollo) {
-        totaleRicalcolato += 2; // aggiungiamo marca da bollo
-      }
-      totaleRicalcolato = parseFloat(totaleRicalcolato.toFixed(2));
-      
-      // 6. Mostriamo i risultati
-      var messaggio = "<strong>Risultati:</strong><br>";
-      messaggio += "• Importo singolo <em>lordo</em> (cioè già comprensivo di " + percentuale + "%): € " + importoSingoloLordo + "<br>";
-      messaggio += "• Importo singolo <em>netto</em> (senza " + percentuale + "%): € " + importoSingoloNetto + "<br>";
-      messaggio += "• Totale ricalcolato (lordo x quantità + marca da bollo): € " + totaleRicalcolato + "<br>";
-      
-      document.getElementById('risultato').innerHTML = messaggio;
+
+      // Se la marca da bollo è selezionata (2 €), altrimenti 0
+      var b = marcaBolloAttiva ? 2 : 0;
+
+      // Convertiamo la percentuale in valore decimale (es. 2% => 0.02)
+      var r = rPerc / 100;
+
+      // ---------------
+      // Formula:
+      //   T = [ Q*x + b ] * (1 + r)
+      //
+      // => x = ( (T / (1+r)) - b ) / Q
+      // ---------------
+      var nettoSingolo = ((T / (1 + r)) - b) / Q;
+
+      // Arrotondamenti
+      nettoSingolo = parseFloat(nettoSingolo.toFixed(6)); 
+      // ↑ qui usiamo 6 decimali per ridurre eventuali errori di arrotondamento,
+      //   poi mostriamo in output con 2 decimali
+
+      // Importo singolo lordo:
+      //   = nettoSingolo * (1 + r)
+      var lordoSingolo = nettoSingolo * (1 + r);
+
+      // Totale netto = Q*x + b
+      var totaleNetto = Q * nettoSingolo + b;
+
+      // Totale lordo (ricontrollo che torni = T)
+      //   = (Q*x + b) * (1 + r)
+      var totaleLordo = totaleNetto * (1 + r);
+
+      // Arrotondiamo a 2 decimali per la presentazione finale
+      var nettoSingolo2 = nettoSingolo.toFixed(2);
+      var lordoSingolo2 = lordoSingolo.toFixed(2);
+      var totaleNetto2 = totaleNetto.toFixed(2);
+      var totaleLordo2 = totaleLordo.toFixed(2);
+
+      // Prepariamo il messaggio
+      var msg = "<h3>Risultati</h3>";
+      msg += "Totale Fattura inserito: € " + T.toFixed(2) + "<br>";
+      msg += "Quantità: " + Q + "<br>";
+      msg += "Percentuale: " + rPerc + "%<br>";
+      msg += (marcaBolloAttiva ? "Marca da bollo inclusa (2 €) soggetta a imposta<br>" : "Senza marca da bollo<br>");
+      msg += "<hr>";
+
+      msg += "<strong>Netto per singola unità:</strong> € " + nettoSingolo2 + "<br>";
+      msg += "<strong>Lordo per singola unità:</strong> € " + lordoSingolo2 + "<br><br>";
+
+      msg += "Totale (netto) = Q * Netto + Marca da Bollo = € " + totaleNetto2 + "<br>";
+      msg += "Totale (lordo) = Totale Netto * (1 + r) = € " + totaleLordo2 + "<br>";
+
+      // Mostriamo i risultati in pagina
+      document.getElementById('risultato').innerHTML = msg;
     }
   </script>
 </body>
