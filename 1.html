@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Calcolatore di Importo Lordo</title>
+</head>
+<body>
+    <h1>Calcolatore di Importo Lordo</h1>
+    
+    <!-- Importo netto per singola unità -->
+    <label for="netto">Importo Netto (per singola quantità) (€):</label>
+    <input type="number" id="netto" step="0.01"><br><br>
+    
+    <!-- Quantità di elementi -->
+    <label for="quantita">Quantità:</label>
+    <input type="number" id="quantita" step="1" value="1"><br><br>
+    
+    <!-- Percentuale di ritenuta o tassazione -->
+    <label for="percentuale">Percentuale (%):</label>
+    <input type="number" id="percentuale" step="0.01"><br><br>
+    
+    <!-- Checkbox per marca da bollo -->
+    <input type="checkbox" id="marcaBollo">
+    <label for="marcaBollo">Includi marca da bollo di 2€</label><br><br>
+    
+    <!-- Bottone per il calcolo -->
+    <button onclick="calcolaLordo()">Calcola Importo Lordo</button>
+    
+    <!-- Mostra risultato -->
+    <p id="risultato"></p>
+
+    <script>
+        function calcolaLordo() {
+            var netto = parseFloat(document.getElementById('netto').value);
+            var quantita = parseInt(document.getElementById('quantita').value);
+            var percentuale = parseFloat(document.getElementById('percentuale').value);
+            var includeMarcaBollo = document.getElementById('marcaBollo').checked;
+
+            // Controlli di validità
+            if (isNaN(netto) || netto < 0) {
+                alert('Inserisci un importo netto valido (>= 0).');
+                return;
+            }
+            if (isNaN(quantita) || quantita <= 0) {
+                alert('Inserisci una quantità valida (>= 1).');
+                return;
+            }
+            if (isNaN(percentuale) || percentuale < 0) {
+                alert('Inserisci una percentuale valida (>= 0).');
+                return;
+            }
+
+            // Calcolo del totale netto
+            var totaleNetto = netto * quantita;
+
+            // Se la marca da bollo è inclusa, si sommano 2€
+            if (includeMarcaBollo) {
+                totaleNetto += 2;
+            }
+
+            // Calcolo del lordo
+            // Formula: Lordo = Netto / (1 + (percentuale / 100))
+            var lordoTotale = totaleNetto / (1 + (percentuale / 100));
+            // Arrotondiamo a 2 decimali
+            lordoTotale = lordoTotale.toFixed(2);
+
+            // Calcolo del lordo per singola unità
+            var lordoPerUnita = lordoTotale / quantita;
+            lordoPerUnita = lordoPerUnita.toFixed(2);
+
+            // Mostra il risultato
+            var messaggio = "L'importo lordo totale da inserire è: € " + lordoTotale +
+                            "<br>L'importo lordo per singola unità è: € " + lordoPerUnita;
+
+            document.getElementById('risultato').innerHTML = messaggio;
+        }
+    </script>
+</body>
+</html>
